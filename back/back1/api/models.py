@@ -26,3 +26,22 @@ class BiometricRecord(models.Model):
 
     def __str__(self):
         return f"{self.timestamp} | state={self.state_prediction}"
+
+
+class UserTask(models.Model):
+    timestamp = models.DateTimeField()
+    app = models.CharField(max_length=200)
+    title = models.CharField(max_length=500)
+    url = models.CharField(max_length=1000, blank=True)
+    active = models.BooleanField(default=False)
+
+    record = models.ForeignKey(
+        "BiometricRecord",
+        on_delete=models.CASCADE,
+        related_name="tasks",
+        null=True,
+        blank=True
+    )
+
+    def __str__(self):
+        return f"{self.timestamp} | {self.app} | {self.title}"

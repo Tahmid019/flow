@@ -1,5 +1,10 @@
 from django.contrib import admin
-from .models import BiometricRecord
+from .models import BiometricRecord, UserTask
+
+@admin.register(UserTask)
+class UserTaskAdmin(admin.ModelAdmin):
+    list_display = ("timestamp", "app", "title", "url", "active", "record")
+    ordering = ("-timestamp",)
 
 @admin.register(BiometricRecord)
 class BiometricRecordAdmin(admin.ModelAdmin):

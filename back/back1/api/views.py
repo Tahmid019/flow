@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-from .models import BiometricRecord
+from .models import BiometricRecord, UserTask
 from datetime import datetime
 import numpy as np
 import onnxruntime as ort
@@ -15,6 +15,25 @@ def predict_flow(features):
     pred = sess.run(None, {input_name: X})[0]
 
     return pred[0]
+
+def latest_tasks(request):
+    last_record = BiometricRecord.objects.order_by("-timestamp").first()
+    if not last_record:
+        return JsonResponse({"tasks": []})
+
+    tasks = [
+        {
+            "timestamp": t.timestamp,
+            "app": t.app,
+            "title": t.title,
+            "url": t.url,
+            "active": t.active,
+        }
+        for t in last_record.tasks.all()
+    ]
+
+    return JsonResponse({"tasks": tasks})
+
 
 def latest_state(request):
     last = BiometricRecord.objects.order_by("-timestamp").first()
@@ -52,10 +71,12 @@ def biometric(request):
 
         typing = data.get("typing", {})
         mouse = data.get("mouse", {})
+        tasks = data.get("tasks", [])   # <-- NEW
 
         timestamp_str = data.get("timestamp")
         timestamp = datetime.fromisoformat(timestamp_str.replace("Z", ""))
 
+        # Create biometric record
         record = BiometricRecord.objects.create(
             timestamp=timestamp,
 
@@ -75,7 +96,8 @@ def biometric(request):
             # System metrics
             idle_time_ms=int(data.get("idle_time_ms", 0)),
         )
-        
+
+        # ===== ML Prediction =====
         features = [
             record.mean_iki_ms,
             record.variance_iki,
@@ -88,13 +110,26 @@ def biometric(request):
             record.mouse_clicks,
             record.idle_time_ms,
         ]
-        
+
         state = predict_flow(features)
-        
         record.state_prediction = state
         record.save()
 
-        
-        return JsonResponse({"status": "saved", "id": record.id, "state_prediction": state})
+        # ===== STORE TASKS =====
+        for t in tasks:
+            UserTask.objects.create(
+                timestamp=timestamp,
+                app=t.get("app", ""),
+                title=t.get("title", ""),
+                url=t.get("url", ""),
+                active=t.get("active", False),
+                record=record,   # link to biometrics
+            )
+
+        return JsonResponse({
+            "status": "saved",
+            "id": record.id,
+            "state_prediction": record.state_prediction
+        })
 
     return JsonResponse({"error": "POST only"}, status=405)
