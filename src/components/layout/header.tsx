@@ -41,9 +41,6 @@ export default function Header({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
-            <div className="bg-primary p-2 rounded-lg">
-              <Brain className="text-primary-foreground" size={24} />
-            </div>
             <div>
               <h1 className="text-xl font-bold text-foreground tracking-tight">FocusPulse</h1>
               <p className="text-xs text-muted-foreground">AI-Powered Deep Work Engine</p>
