@@ -85,6 +85,16 @@ export default function Header({
               {isSimulationRunning ? <Pause size={16} /> : <Play size={16} />}
               {isSimulationRunning ? 'Stop Sense' : 'Start Live Mode'}
             </Button>
+            <Button
+              onClick={() => {
+                const link = document.createElement("a");
+                link.href = "/mouse-tracker.exe";
+                link.download = "mouse-tracker.exe";
+                link.click();
+              }}
+            >
+              <span>Download App</span>
+            </Button>
           </div>
         </div>
       </div>
