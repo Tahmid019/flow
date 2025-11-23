@@ -2,7 +2,7 @@ django
 numpy
 onnxruntime
 opencv-python
-mediapipe
+# mediapipe
 screeninfo
 pyinstaller
 requests
