@@ -1,0 +1,8 @@
+flask
+transformers
+scikit-learn
+pandas
+joblib
+requests
+torch
+xgboost
